@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Compra Confirmada — Seca Absoluta 15D</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --red: #E31B1B;
+    --red2: #FF2222;
+    --red-dark: #9B0000;
+    --red-glow: rgba(227,27,27,0.3);
+    --black: #060606;
+    --dark: #0E0E0E;
+    --dark2: #161616;
+    --dark3: #1E1E1E;
+    --white: #FFFFFF;
+    --gray: #666;
+    --gray2: #999;
+    --gray-light: #BBBBBB;
+    --green: #16a34a;
+    --green2: #22c55e;
+    --radius: 18px;
+    --radius-sm: 12px;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--black);
+    color: var(--white);
+    min-height: 100svh;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* BG */
+  .bg {
+    position: fixed; inset: 0; z-index: 0;
+    background:
+      radial-gradient(ellipse 70% 50% at 50% 0%, rgba(34,197,94,0.07) 0%, transparent 55%),
+      radial-gradient(ellipse 60% 55% at 80% 20%, rgba(227,27,27,0.07) 0%, transparent 60%),
+      radial-gradient(ellipse 50% 40% at 0% 100%, rgba(150,0,0,0.05) 0%, transparent 55%),
+      var(--black);
+  }
+  .bg-dots {
+    position: fixed; inset: 0; z-index: 0;
+    background-image: radial-gradient(rgba(255,255,255,0.03) 1px, transparent 1px);
+    background-size: 32px 32px;
+    mask-image: radial-gradient(ellipse 80% 60% at 50% 30%, black, transparent);
+  }
+
+  /* CONFETTI CANVAS */
+  #confetti-canvas {
+    position: fixed; inset: 0; z-index: 2;
+    pointer-events: none;
+  }
+
+  .wrap {
+    position: relative; z-index: 3;
+    max-width: 620px; margin: 0 auto;
+    padding: 0 16px 80px;
+  }
+
+  /* TOP BAR */
+  .topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 20px 0 0; margin-bottom: 32px;
+  }
+  .logo { font-family: 'Bebas Neue', sans-serif; font-size: 18px; letter-spacing: 3px; }
+  .logo em { color: var(--red); font-style: normal; }
+  .confirmed-badge {
+    display: flex; align-items: center; gap: 6px;
+    background: rgba(34,197,94,0.12); border: 1px solid rgba(34,197,94,0.3);
+    color: var(--green2); font-size: 11px; font-weight: 800;
+    letter-spacing: 1.5px; text-transform: uppercase;
+    padding: 5px 12px; border-radius: 50px;
+  }
+  .confirmed-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green2); animation: blink 1.2s ease-in-out infinite; }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
+
+  /* ── HERO BLOCK ── */
+  .hero-block {
+    background: var(--dark2);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: var(--radius);
+    padding: 40px 32px 36px;
+    position: relative; overflow: hidden;
+    box-shadow: 0 40px 80px rgba(0,0,0,0.6);
+    margin-bottom: 20px;
+    text-align: center;
+  }
+  .hero-block::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, transparent, var(--green2), #4ade80, var(--green2), transparent);
+  }
+
+  .hero-emoji { font-size: 52px; margin-bottom: 16px; animation: pop 0.6s cubic-bezier(0.34,1.56,0.64,1) both; }
+  @keyframes pop { from{transform:scale(0);opacity:0} to{transform:scale(1);opacity:1} }
+
+  .hero-eyebrow {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.3);
+    color: var(--green2); font-size: 11px; font-weight: 800; letter-spacing: 2px;
+    text-transform: uppercase; padding: 5px 14px; border-radius: 50px; margin-bottom: 20px;
+  }
+
+  .hero-headline {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(34px, 8vw, 54px);
+    line-height: 0.97; margin-bottom: 14px; letter-spacing: 0.5px;
+  }
+  .hero-headline .green { color: var(--green2); }
+  .hero-headline .red   { color: var(--red); }
+
+  .hero-sub {
+    font-size: 15px; color: var(--gray-light); line-height: 1.7;
+    max-width: 480px; margin: 0 auto 24px;
+  }
+  .hero-sub strong { color: var(--white); }
+
+  /* ACCESS BOX */
+  .access-box {
+    background: rgba(34,197,94,0.07); border: 1px solid rgba(34,197,94,0.25);
+    border-radius: var(--radius-sm); padding: 20px 22px;
+    display: flex; align-items: center; gap: 14px; text-align: left;
+  }
+  .access-icon { font-size: 28px; flex-shrink: 0; }
+  .access-text { flex: 1; }
+  .access-title { font-weight: 800; font-size: 15px; margin-bottom: 4px; color: var(--white); }
+  .access-desc { font-size: 13px; color: var(--gray2); line-height: 1.5; }
+  .access-link {
+    display: inline-flex; align-items: center; gap: 6px;
+    color: var(--green2); font-size: 13px; font-weight: 700;
+    text-decoration: none; margin-top: 6px; transition: opacity 0.2s;
+  }
+  .access-link:hover { opacity: 0.8; }
+
+  /* ── SECTIONS ── */
+  .section {
+    background: var(--dark2);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: var(--radius);
+    padding: 28px 28px;
+    position: relative; overflow: hidden;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.4);
+    margin-bottom: 16px;
+  }
+  .section::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, transparent, var(--red), transparent);
+  }
+
+  .section-label {
+    font-size: 10px; font-weight: 800; color: var(--gray2);
+    letter-spacing: 2.5px; text-transform: uppercase; margin-bottom: 16px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .section-label::after { content:''; flex:1; height:1px; background:rgba(255,255,255,0.05); }
+
+  .section-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(22px, 4.5vw, 32px);
+    line-height: 1.05; margin-bottom: 10px;
+  }
+  .section-title .red { color: var(--red); }
+
+  .section-text { font-size: 14px; color: var(--gray-light); line-height: 1.75; }
+  .section-text strong { color: var(--white); }
+  .section-text .accent { color: var(--red); font-weight: 700; }
+
+  /* STEPS LIST */
+  .steps { display: flex; flex-direction: column; gap: 0; margin-top: 4px; }
+  .step {
+    display: grid; grid-template-columns: 44px 1fr; gap: 14px;
+    padding: 18px 0; border-bottom: 1px solid rgba(255,255,255,0.05); align-items: start;
+  }
+  .step:last-child { border-bottom: none; padding-bottom: 0; }
+  .step-num {
+    width: 44px; height: 44px; border-radius: 12px;
+    background: rgba(227,27,27,0.1); border: 1px solid rgba(227,27,27,0.25);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Bebas Neue', sans-serif; font-size: 22px; color: var(--red);
+    flex-shrink: 0;
+  }
+  .step-content {}
+  .step-title { font-weight: 700; font-size: 15px; margin-bottom: 4px; }
+  .step-desc { font-size: 13px; color: var(--gray2); line-height: 1.5; }
+  .step-tag {
+    display: inline-block; background: rgba(227,27,27,0.1); border: 1px solid rgba(227,27,27,0.2);
+    color: var(--red); font-size: 10px; font-weight: 700; letter-spacing: 1px;
+    padding: 2px 8px; border-radius: 50px; margin-top: 6px; text-transform: uppercase;
+  }
+
+  /* CHECKLIST */
+  .checklist { display: flex; flex-direction: column; gap: 12px; }
+  .check-item {
+    display: flex; align-items: flex-start; gap: 12px;
+    font-size: 14px; color: var(--gray-light); line-height: 1.5;
+  }
+  .check-icon {
+    width: 22px; height: 22px; border-radius: 50%; flex-shrink: 0;
+    background: rgba(34,197,94,0.12); border: 1px solid rgba(34,197,94,0.3);
+    color: var(--green2); font-size: 11px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center; margin-top: 1px;
+  }
+
+  /* TIMELINE */
+  .timeline { display: flex; flex-direction: column; gap: 0; position: relative; }
+  .timeline::before {
+    content: ''; position: absolute; left: 21px; top: 32px; bottom: 32px;
+    width: 2px; background: linear-gradient(to bottom, var(--red), rgba(227,27,27,0.1));
+  }
+  .tl-item {
+    display: grid; grid-template-columns: 44px 1fr; gap: 14px;
+    padding: 16px 0; align-items: start;
+  }
+  .tl-dot {
+    width: 44px; height: 44px; border-radius: 50%;
+    background: var(--dark3); border: 2px solid var(--red);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; position: relative; z-index: 1;
+    box-shadow: 0 0 14px rgba(227,27,27,0.2); flex-shrink: 0;
+  }
+  .tl-content {}
+  .tl-day { font-size: 11px; font-weight: 700; color: var(--red); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 4px; }
+  .tl-title { font-weight: 700; font-size: 15px; margin-bottom: 3px; }
+  .tl-desc { font-size: 13px; color: var(--gray2); line-height: 1.5; }
+
+  /* WARNING BOX */
+  .warning-box {
+    background: rgba(227,27,27,0.07); border: 1px solid rgba(227,27,27,0.25);
+    border-radius: var(--radius-sm); padding: 18px 20px;
+    display: flex; align-items: flex-start; gap: 12px;
+  }
+  .warning-icon { font-size: 20px; flex-shrink: 0; margin-top: 1px; }
+  .warning-text { font-size: 14px; color: var(--gray-light); line-height: 1.7; }
+  .warning-text strong { color: var(--white); }
+
+  /* SOCIAL PROOF */
+  .testimonials { display: flex; flex-direction: column; gap: 14px; }
+  .testi {
+    background: var(--dark3); border: 1px solid rgba(255,255,255,0.06);
+    border-radius: var(--radius-sm); padding: 18px 18px;
+    position: relative;
+  }
+  .testi::before {
+    content: '"'; position: absolute; top: -8px; left: 16px;
+    font-family: 'Bebas Neue', sans-serif; font-size: 48px; color: var(--red); line-height: 1;
+  }
+  .testi-stars { color: #FFD700; font-size: 13px; margin-bottom: 8px; }
+  .testi-text { font-size: 13px; color: var(--gray-light); line-height: 1.7; margin-bottom: 12px; font-style: italic; }
+  .testi-author { display: flex; align-items: center; gap: 10px; }
+  .testi-avatar {
+    width: 34px; height: 34px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--red-dark), var(--red));
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Bebas Neue', sans-serif; font-size: 16px; color: #fff; flex-shrink: 0;
+  }
+  .testi-name { font-weight: 700; font-size: 13px; }
+  .testi-verified { font-size: 11px; color: var(--gray2); display: flex; align-items: center; gap: 4px; }
+  .testi-verified::before { content:'✓'; color: var(--green2); font-weight: 700; }
+
+  /* UPSELL */
+  .upsell-block {
+    background: linear-gradient(135deg, rgba(227,27,27,0.09) 0%, rgba(227,27,27,0.03) 100%);
+    border: 1px solid rgba(227,27,27,0.25);
+    border-radius: var(--radius); padding: 28px 28px;
+    margin-bottom: 16px; text-align: center;
+    position: relative; overflow: hidden;
+    box-shadow: 0 0 40px rgba(227,27,27,0.08);
+  }
+  .upsell-block::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, transparent, var(--red), transparent);
+  }
+  .upsell-eyebrow {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: rgba(227,27,27,0.12); border: 1px solid rgba(227,27,27,0.3);
+    color: var(--red); font-size: 10px; font-weight: 800; letter-spacing: 2px;
+    text-transform: uppercase; padding: 4px 12px; border-radius: 50px; margin-bottom: 16px;
+  }
+  .upsell-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(22px, 5vw, 34px); line-height: 1; margin-bottom: 12px;
+  }
+  .upsell-title .red { color: var(--red); }
+  .upsell-text { font-size: 14px; color: var(--gray-light); line-height: 1.7; margin-bottom: 20px; }
+  .upsell-text strong { color: var(--white); }
+
+  /* SHARE BUTTONS */
+  .share-btns { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+  .share-btn {
+    display: flex; align-items: center; gap: 8px;
+    padding: 12px 20px; border-radius: 50px; border: none; cursor: pointer;
+    font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 700;
+    text-decoration: none; transition: all 0.2s;
+  }
+  .share-wpp { background: #25D366; color: #fff; }
+  .share-wpp:hover { background: #1da851; transform: translateY(-2px); box-shadow: 0 6px 20px rgba(37,211,102,0.35); }
+  .share-ig { background: linear-gradient(135deg, #833AB4, #FD1D1D, #FCAF45); color: #fff; }
+  .share-ig:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(200,30,30,0.3); }
+  .share-copy { background: var(--dark3); color: var(--gray-light); border: 1px solid rgba(255,255,255,0.1); }
+  .share-copy:hover { border-color: rgba(255,255,255,0.25); color: var(--white); transform: translateY(-2px); }
+
+  /* COUNTDOWN */
+  .countdown-wrap { display: flex; align-items: center; justify-content: center; gap: 4px; margin-bottom: 20px; }
+  .cd-block { display: flex; flex-direction: column; align-items: center; }
+  .cd-num {
+    font-family: 'Bebas Neue', sans-serif; font-size: 38px; line-height: 1;
+    color: var(--red); background: var(--dark3); border: 1px solid rgba(227,27,27,0.2);
+    padding: 8px 14px; border-radius: 10px; min-width: 56px; text-align: center;
+  }
+  .cd-label { font-size: 10px; color: var(--gray2); letter-spacing: 1px; text-transform: uppercase; margin-top: 5px; }
+  .cd-sep { font-family: 'Bebas Neue', sans-serif; font-size: 28px; color: var(--red); margin: 0 4px; padding-bottom: 18px; }
+
+  .countdown-text { text-align: center; font-size: 13px; color: var(--gray2); margin-bottom: 20px; }
+  .countdown-text strong { color: var(--white); }
+
+  /* MAIN BUTTON */
+  .btn-main {
+    display: block; width: 100%; border: none; cursor: pointer;
+    background: linear-gradient(130deg, var(--red-dark), var(--red), var(--red2));
+    color: #fff; font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px; letter-spacing: 2.5px; padding: 20px 28px;
+    border-radius: 50px; text-align: center; text-decoration: none;
+    position: relative; overflow: hidden;
+    animation: pulsate 2.2s ease-in-out infinite;
+    transition: transform 0.2s; margin-bottom: 12px;
+  }
+  .btn-main::after {
+    content:''; position:absolute; inset:0;
+    background:linear-gradient(105deg,transparent 38%,rgba(255,255,255,0.18) 50%,transparent 62%);
+    transform:translateX(-100%); animation:sheen 3s ease-in-out infinite;
+  }
+  .btn-main:hover { transform:translateY(-2px) scale(1.01); }
+  @keyframes pulsate {
+    0%,100%{box-shadow:0 0 30px rgba(227,27,27,0.35),0 4px 20px rgba(0,0,0,0.4)}
+    50%{box-shadow:0 0 60px rgba(227,27,27,0.6),0 4px 20px rgba(0,0,0,0.4)}
+  }
+  @keyframes sheen { 0%{transform:translateX(-100%)} 40%,100%{transform:translateX(200%)} }
+
+  /* TRUST */
+  .trust-row {
+    display: flex; align-items: center; justify-content: center; gap: 18px;
+    flex-wrap: wrap; padding: 16px 0;
+  }
+  .trust-item { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--gray2); }
+  .trust-item svg { color: var(--red); flex-shrink: 0; }
+
+  /* DIVIDER */
+  .divider { height: 1px; background: linear-gradient(90deg, transparent, rgba(227,27,27,0.2), transparent); margin: 4px 0 20px; }
+
+  @media(max-width:480px){
+    .hero-block, .section { padding: 24px 18px; }
+    .upsell-block { padding: 22px 18px; }
+    .share-btns { gap: 8px; }
+    .share-btn { font-size: 13px; padding: 11px 16px; }
+    .timeline::before { display: none; }
+    .tl-item { grid-template-columns: 44px 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="bg"></div>
+<div class="bg-dots"></div>
+<canvas id="confetti-canvas"></canvas>
+
+<div class="wrap">
+
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <div class="logo">SECA <em>ABSOLUTA</em></div>
+    <div class="confirmed-badge"><div class="confirmed-dot"></div> CONFIRMADO</div>
+  </div>
+
+  <!-- ══ HERO ══ -->
+  <div class="hero-block">
+    <div class="hero-emoji">🔥</div>
+    <div class="hero-eyebrow">✅ COMPRA CONFIRMADA</div>
+    <h1 class="hero-headline">
+      BEM-VINDA AO<br>
+      <span class="green">PROTOCOLO</span><br>
+      <span class="red">SECA ABSOLUTA 15D™</span>
+    </h1>
+    <p class="hero-sub">
+      Você acabou de tomar a decisão mais importante para o seu corpo.<br>
+      <strong>A partir de agora, tudo muda.</strong>
+    </p>
+    <div class="access-box">
+      <span class="access-icon">📲</span>
+      <div class="access-text">
+        <div class="access-title">Seu acesso foi liberado agora mesmo</div>
+        <div class="access-desc">Verifique seu e-mail — o link de acesso foi enviado. Caso não encontre, verifique a caixa de spam.</div>
+        <a href="mailto:" class="access-link">📧 Acessar meu e-mail →</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ PRIMEIROS PASSOS ══ -->
+  <div class="section">
+    <div class="section-label">🚀 COMECE AGORA</div>
+    <h2 class="section-title">3 PASSOS PARA <span class="red">COMEÇAR HOJE</span></h2>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <div class="step-title">Acesse seu e-mail agora</div>
+          <div class="step-desc">O link de acesso ao protocolo completo foi enviado para o e-mail usado na compra. Clique nele para liberar tudo.</div>
+          <span class="step-tag">⚡ Fazer isso agora</span>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <div class="step-title">Leia o módulo de desinchaço primeiro</div>
+          <div class="step-desc">Comece pelo Protocolo de Chás e pelo Plano Alimentar. São os primeiros a gerar resultado visível — ainda nos dias 1 a 3.</div>
+          <span class="step-tag">📋 Dias 1 a 5</span>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <div class="step-title">Preencha sua tabela de progresso</div>
+          <div class="step-desc">Anote seu peso e medidas no Dia 1. Isso vai te motivar quando você ver a diferença no Dia 7. Não pule essa parte.</div>
+          <span class="step-tag">📊 Registre hoje</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ O QUE VOCÊ TEM ══ -->
+  <div class="section">
+    <div class="section-label">📦 SEU ACESSO COMPLETO</div>
+    <h2 class="section-title">TUDO QUE VOCÊ <span class="red">RECEBEU</span></h2>
+    <div class="checklist">
+      <div class="check-item"><div class="check-icon">✓</div><span><strong>Protocolo principal 15D</strong> — o guia completo com as 3 fases estruturadas</span></div>
+      <div class="check-item"><div class="check-icon">✓</div><span><strong>Plano alimentar estratégico</strong> — organizado por refeição, sem complicação</span></div>
+      <div class="check-item"><div class="check-icon">✓</div><span><strong>Lista de compras completa</strong> — só o que você precisa, sem enrolação</span></div>
+      <div class="check-item"><div class="check-icon">✓</div><span><strong>Protocolo de chás naturais</strong> — anti-inchaço, digestivo e termogênico</span></div>
+      <div class="check-item"><div class="check-icon">✓</div><span><strong>Treinos metabólicos</strong> — 20 a 30 minutos, sem equipamento, em casa</span></div>
+      <div class="check-item"><div class="check-icon">✓</div><span><strong>Planner semanal</strong> — organiza sua semana sem você precisar pensar</span></div>
+      <div class="check-item"><div class="check-icon">✓</div><span><strong>Tabela de progresso</strong> — acompanhe peso, medidas e evolução dia a dia</span></div>
+      <div class="check-item"><div class="check-icon">✓</div><span><strong>Check-list diário</strong> — saiba exatamente o que fazer em cada dia dos 15</span></div>
+    </div>
+  </div>
+
+  <!-- ══ TIMELINE 15 DIAS ══ -->
+  <div class="section">
+    <div class="section-label">📅 SUA JORNADA</div>
+    <h2 class="section-title">O QUE ESPERAR <span class="red">EM CADA FASE</span></h2>
+    <div class="timeline">
+      <div class="tl-item">
+        <div class="tl-dot">🎯</div>
+        <div class="tl-content">
+          <div class="tl-day">DIAS 1 A 5</div>
+          <div class="tl-title">Desinchaço e Desinflamação</div>
+          <div class="tl-desc">Seu corpo começa a liberar retenção. Você pode perceber a barriga menos inchada, sensação de leveza e as primeiras mudanças nas medidas.</div>
+        </div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot">🔥</div>
+        <div class="tl-content">
+          <div class="tl-day">DIAS 6 A 10</div>
+          <div class="tl-title">Ativação Metabólica</div>
+          <div class="tl-desc">O metabolismo entra em ritmo. Mais disposição, roupas ficando mais folgadas, perda de peso progressiva e consistente.</div>
+        </div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot">💪</div>
+        <div class="tl-content">
+          <div class="tl-day">DIAS 11 A 15</div>
+          <div class="tl-title">Ajuste e Definição</div>
+          <div class="tl-desc">Aparência mais definida, contorno corporal visível, autoestima lá em cima. Esse é o momento de registrar tudo para ver o antes e depois.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ AVISO IMPORTANTE ══ -->
+  <div class="section">
+    <div class="section-label">⚠️ IMPORTANTE LER</div>
+    <div class="warning-box" style="margin-bottom:16px">
+      <span class="warning-icon">⚡</span>
+      <div class="warning-text">
+        <strong>Não pule o Dia 1.</strong> A maioria das pessoas que não vê resultado é porque começa sem registrar o ponto de partida. Anote seu peso e medidas hoje — isso muda tudo quando você ver a evolução.
+      </div>
+    </div>
+    <div class="warning-box">
+      <span class="warning-icon">🔒</span>
+      <div class="warning-text">
+        <strong>Você tem 7 dias de garantia.</strong> Se por qualquer motivo não fizer sentido, basta solicitar o reembolso — sem perguntas. Mas siga o protocolo pelo menos 7 dias antes de julgar.
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ DEPOIMENTOS ══ -->
+  <div class="section">
+    <div class="section-label">👥 QUEM JÁ ESTÁ LÁ</div>
+    <h2 class="section-title" style="margin-bottom:20px">VOCÊ ESTÁ EM <span class="red">BOA COMPANHIA</span></h2>
+    <div class="testimonials">
+      <div class="testi">
+        <div class="testi-stars">★★★★★</div>
+        <p class="testi-text">Nos primeiros 3 dias já senti diferença no inchaço. Na primeira semana as roupas começaram a ficar mais soltas. Nunca tinha visto resultado tão rápido.</p>
+        <div class="testi-author">
+          <div class="testi-avatar">J</div>
+          <div>
+            <div class="testi-name">Juliana Santos</div>
+            <div class="testi-verified">Cliente verificada • 2 semanas</div>
+          </div>
+        </div>
+      </div>
+      <div class="testi">
+        <div class="testi-stars">★★★★★</div>
+        <p class="testi-text">O que me surpreendeu foi a simplicidade. Não é uma dieta maluca. É um plano que dá para seguir de verdade — e funciona. Minha barriga desinchou bastante.</p>
+        <div class="testi-author">
+          <div class="testi-avatar">C</div>
+          <div>
+            <div class="testi-name">Carla Almeida</div>
+            <div class="testi-verified">Cliente verificada • 1 mês</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ COMPARTILHE ══ -->
+  <div class="upsell-block">
+    <div class="upsell-eyebrow">🎁 INDIQUE E GANHE</div>
+    <h2 class="upsell-title">CONHECE ALGUÉM QUE<br>TAMBÉM <span class="red">PRECISA DISSO?</span></h2>
+    <p class="upsell-text">
+      Manda pra ela. <strong>Essa decisão pode mudar a vida de alguém</strong> que está no mesmo ciclo que você estava antes de hoje.
+    </p>
+    <div class="share-btns">
+      <a href="https://wa.me/?text=Acabei%20de%20pegar%20o%20Protocolo%20Seca%20Absoluta%2015D%20e%20t%C3%A1%20incr%C3%ADvel!%20D%C3%A1%20uma%20olhada%3A%20https%3A%2F%2Fsecaabsoluta.netlify.app" target="_blank" class="share-btn share-wpp">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.122.554 4.112 1.523 5.837L.057 23.998l6.304-1.653A11.954 11.954 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.818 9.818 0 0 1-5.006-1.376l-.36-.213-3.733.979.997-3.645-.235-.374A9.818 9.818 0 1 1 12 21.818z"/></svg>
+        WhatsApp
+      </a>
+      <button class="share-btn share-copy" onclick="copyLink()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+        <span id="copy-label">Copiar link</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- TRUST -->
+  <div class="trust-row">
+    <div class="trust-item"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> Compra 100% segura</div>
+    <div class="trust-item"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Garantia 7 dias</div>
+    <div class="trust-item"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg> Produto digital</div>
+  </div>
+
+</div>
+
+<script>
+  /* ── CONFETTI ── */
+  const canvas = document.getElementById('confetti-canvas');
+  const ctx    = canvas.getContext('2d');
+  canvas.width  = window.innerWidth;
+  canvas.height = window.innerHeight;
+
+  const COLORS = ['#E31B1B','#FF4444','#22c55e','#ffffff','#FFD700','#FF6B6B','#4ade80'];
+  const pieces = Array.from({length: 120}, () => ({
+    x: Math.random() * canvas.width,
+    y: Math.random() * canvas.height - canvas.height,
+    w: Math.random() * 10 + 4,
+    h: Math.random() * 6 + 3,
+    color: COLORS[Math.floor(Math.random()*COLORS.length)],
+    rot: Math.random() * Math.PI * 2,
+    rotSpeed: (Math.random() - 0.5) * 0.12,
+    vx: (Math.random() - 0.5) * 2.5,
+    vy: Math.random() * 3.5 + 1.5,
+    opacity: Math.random() * 0.6 + 0.4,
+  }));
+
+  let frame = 0;
+  function drawConfetti() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    pieces.forEach(p => {
+      p.x += p.vx; p.y += p.vy; p.rot += p.rotSpeed;
+      if (p.y > canvas.height + 20) { p.y = -20; p.x = Math.random() * canvas.width; }
+      ctx.save();
+      ctx.translate(p.x, p.y);
+      ctx.rotate(p.rot);
+      ctx.globalAlpha = p.opacity;
+      ctx.fillStyle = p.color;
+      ctx.fillRect(-p.w/2, -p.h/2, p.w, p.h);
+      ctx.restore();
+    });
+    frame++;
+    if (frame < 220) requestAnimationFrame(drawConfetti);
+    else ctx.clearRect(0,0,canvas.width,canvas.height);
+  }
+  requestAnimationFrame(drawConfetti);
+
+  window.addEventListener('resize', () => {
+    canvas.width  = window.innerWidth;
+    canvas.height = window.innerHeight;
+  });
+
+  /* ── COPY LINK ── */
+  function copyLink() {
+    navigator.clipboard.writeText('https://secaabsoluta.netlify.app').then(() => {
+      const el = document.getElementById('copy-label');
+      el.textContent = '✓ Copiado!';
+      setTimeout(() => el.textContent = 'Copiar link', 2200);
+    });
+  }
+</script>
+</body>
+</html>
